@@ -433,7 +433,7 @@ Feel free to tune the performance settings in librenms.conf to meet your needs.
 === "Debian 10"
     === "NGINX"
         ```bash
-        vi /etc/nginx/sites-enabled/librenms.vhost
+        vi /etc/nginx/sites-available/librenms.vhost
         ```
 
         Add the following config, edit `server_name` as required:
@@ -464,6 +464,7 @@ Feel free to tune the performance settings in librenms.conf to meet your needs.
 
         ```bash
         rm /etc/nginx/sites-enabled/default
+        ln -s /etc/nginx/sites-available/librenms.vhost /etc/nginx/sites-enabled/
         systemctl reload nginx
         systemctl restart php7.4-fpm
         ```
