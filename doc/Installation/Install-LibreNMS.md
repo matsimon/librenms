@@ -119,6 +119,12 @@ Ensure date.timezone is set in php.ini to your preferred time zone.
     vi /etc/php.ini
     ```
 
+=== "Debian 11"
+    ```bash
+    vi /etc/php/7.4/fpm/php.ini
+    vi /etc/php/7.4/cli/php.ini
+    ```
+
 === "Debian 10"
     ```bash
     vi /etc/php/7.3/fpm/php.ini
@@ -142,6 +148,11 @@ timedatectl set-timezone Etc/UTC
 === "CentOS 8"
     ```
     vi /etc/my.cnf.d/mariadb-server.cnf
+    ```
+
+=== "Debian 11"
+    ```
+    vi /etc/mysql/mariadb.conf.d/50-server.cnf
     ```
 
 === "Debian 10"
@@ -187,6 +198,12 @@ exit
     ```bash
     cp /etc/php-fpm.d/www.conf /etc/php-fpm.d/librenms.conf
     vi /etc/php-fpm.d/librenms.conf
+    ```
+
+=== "Debian 11"
+    ```bash
+    cp /etc/php/7.4/fpm/pool.d/www.conf /etc/php/7.4/fpm/pool.d/librenms.conf
+    vi /etc/php/7.4/fpm/pool.d/librenms.conf
     ```
 
 === "Debian 10"
@@ -374,6 +391,45 @@ Feel free to tune the performance settings in librenms.conf to meet your needs.
         systemctl enable --now php-fpm
         ```
 
+=== "Debian 11"
+    === "NGINX"
+        ```bash
+        vi /etc/nginx/sites-available/librenms.vhost
+        ```
+
+        Add the following config, edit `server_name` as required:
+
+        ```nginx
+        server {
+         listen      80;
+         server_name librenms.example.com;
+         root        /opt/librenms/html;
+         index       index.php;
+
+         charset utf-8;
+         gzip on;
+         gzip_types text/css application/javascript text/javascript application/x-javascript image/svg+xml text/plain text/xsd text/xsl text/xml image/x-icon;
+         location / {
+          try_files $uri $uri/ /index.php?$query_string;
+         }
+         location ~ [^/]\.php(/|$) {
+          fastcgi_pass unix:/run/php-fpm-librenms.sock;
+          fastcgi_split_path_info ^(.+\.php)(/.+)$;
+          include fastcgi.conf;
+         }
+         location ~ /\.(?!well-known).* {
+          deny all;
+         }
+        }
+        ```
+
+        ```bash
+        rm /etc/nginx/sites-enabled/default
+        ln -s /etc/nginx/sites-available/librenms.vhost /etc/nginx/sites-enabled/
+        systemctl reload nginx
+        systemctl restart php7.4-fpm
+        ```
+
 === "Debian 10"
     === "NGINX"
         ```bash
@@ -409,7 +465,7 @@ Feel free to tune the performance settings in librenms.conf to meet your needs.
         ```bash
         rm /etc/nginx/sites-enabled/default
         systemctl reload nginx
-        systemctl restart php7.3-fpm
+        systemctl restart php7.4-fpm
         ```
 
 ## SELinux
@@ -471,6 +527,9 @@ Feel free to tune the performance settings in librenms.conf to meet your needs.
     audit2why < /var/log/audit/audit.log
     ```
 
+=== "Debian 11"
+    SELinux not enabled by default
+
 === "Debian 10"
     SELinux not enabled by default
 
@@ -485,6 +544,9 @@ Feel free to tune the performance settings in librenms.conf to meet your needs.
     firewall-cmd --zone public --add-service http --add-service https
     firewall-cmd --permanent --zone public --add-service http --add-service https
     ```
+
+=== "Debian 11"
+    Firewall not enabled by default
 
 === "Debian 10"
     Firewall not enabled by default
